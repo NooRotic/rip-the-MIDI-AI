@@ -148,6 +148,12 @@ def load_midi_notes(path) -> list[NoteEvent]:
     return events
 
 
+def steps_to_events(steps: list[list[int]], step_seconds: float = 0.5, velocity: int = 100) -> list[NoteEvent]:
+    """[[60], [64, 67]] -> NoteEvents, one step every ``step_seconds``, each note held for 90% of it."""
+    return [NoteEvent(i * step_seconds, n, velocity, step_seconds * 0.9, 0, 0)
+            for i, step in enumerate(steps) for n in step]
+
+
 def group_steps(events: list[NoteEvent], window: float = 0.03) -> list[list[NoteEvent]]:
     """Notes whose onsets fall within ``window`` seconds of the step's first note form one step."""
     steps: list[list[NoteEvent]] = []

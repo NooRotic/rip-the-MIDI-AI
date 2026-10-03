@@ -6,6 +6,7 @@ piece, play the MIDI file to it with every note moved onto those two channels. T
 
     venv\Scripts\python.exe keyboard\light_keys.py --probe                 # which channels light keys? C4 on ch 1..16
     venv\Scripts\python.exe keyboard\light_keys.py --note C4 --channel 4   # one test note
+    venv\Scripts\python.exe keyboard\light_keys.py --notes "C4 E4+G4 C5" --step 0.5 --loop   # audition a text sequence
     venv\Scripts\python.exe keyboard\light_keys.py song.mid                # play; hands split at middle C -> ch 3 / ch 4
     venv\Scripts\python.exe keyboard\light_keys.py song.mid --speed 0.5    # half speed
     venv\Scripts\python.exe keyboard\light_keys.py song.mid --hand right   # one hand only
@@ -23,7 +24,8 @@ import time
 import mido
 
 from midi_core import (MIDDLE_C, NAV_LEFT_CH, NAV_RIGHT_CH, PORT_NEEDLE, all_notes_off, ch0, ch1,
-                       find_port, hand_of, load_midi_notes, note_name, parse_note, track_summary)
+                       find_port, hand_of, load_midi_notes, note_name, parse_note, parse_sequence,
+                       steps_to_events, track_summary)
 
 
 def build_schedule(events, mapping="split", split=MIDDLE_C, left_ch=NAV_LEFT_CH, right_ch=NAV_RIGHT_CH,
@@ -84,6 +86,8 @@ def main() -> int:
     ap.add_argument("midi", nargs="?", help="MIDI file to play")
     ap.add_argument("--probe", action="store_true", help="play one note on channels 1..16 to find the navigate channels")
     ap.add_argument("--note", help="send one test note (e.g. C4) and exit")
+    ap.add_argument("--notes", help='play a text sequence instead of a file, e.g. "C4 E4+G4 C5"')
+    ap.add_argument("--step", type=float, default=0.5, help="seconds per step for --notes (default 0.5)")
     ap.add_argument("--channel", type=int, default=NAV_RIGHT_CH, help="1-based channel for --note (default 4)")
     ap.add_argument("--map", choices=("split", "track", "keep"), default="split",
                     help="split: hands by --split pitch; track: --right-track/--left-track; keep: original channels")
@@ -110,10 +114,14 @@ def main() -> int:
         return 0
 
     schedule = None
+    events = None
     if a.midi:
         if a.map == "track" and a.right_track is None and a.left_track is None:
             ap.error("--map track needs --right-track and/or --left-track (see --info)")
         events = load_midi_notes(a.midi)
+    elif a.notes:
+        events = steps_to_events(parse_sequence(a.notes), a.step)
+    if events is not None:
         schedule = build_schedule(events, a.map, parse_note(a.split), a.left_ch, a.right_ch,
                                   a.right_track, a.left_track, a.hand, a.velocity)
         if not schedule:
@@ -127,7 +135,7 @@ def main() -> int:
                 print("%8.3f  %s" % (t / a.speed, msg))
             return 0
     elif not (a.probe or a.note):
-        ap.error("give a MIDI file, --probe or --note")
+        ap.error("give a MIDI file, --notes, --probe or --note")
 
     port = find_port(mido.get_output_names(), a.port)
     if not port:

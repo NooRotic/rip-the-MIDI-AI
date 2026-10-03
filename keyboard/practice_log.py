@@ -83,17 +83,26 @@ def analyse(notes):
     return out
 
 
-def save_midi(notes, path, bpm=100):
+def save_midi(notes, path, bpm=100, note_len=0.25):
+    """Write the captured note_ons as a one-track MIDI file with a fixed note length.
+
+    Events are sorted by absolute time first, so fast playing (the next note arriving before the
+    previous note_off) never produces a negative delta, which mido refuses to encode.
+    """
     mid = mido.MidiFile(ticks_per_beat=480)
     tr = mido.MidiTrack()
     mid.tracks.append(tr)
     tr.append(mido.MetaMessage("set_tempo", tempo=mido.bpm2tempo(bpm)))
-    tick = lambda s: int(mido.second2tick(s, 480, mido.bpm2tempo(bpm)))
-    prev = 0.0
+    tick = lambda s: int(round(mido.second2tick(s, 480, mido.bpm2tempo(bpm))))
+    events = []
     for t, n, v in notes:
-        tr.append(mido.Message("note_on", note=n, velocity=v, time=tick(t - prev)))
-        tr.append(mido.Message("note_off", note=n, velocity=0, time=tick(0.25)))
-        prev = t + 0.25
+        events.append((tick(t), 1, mido.Message("note_on", note=n, velocity=v)))
+        events.append((tick(t + note_len), 0, mido.Message("note_off", note=n, velocity=0)))
+    events.sort(key=lambda e: (e[0], e[1]))
+    prev = 0
+    for at, _, msg in events:
+        tr.append(msg.copy(time=at - prev))
+        prev = at
     mid.save(str(path))
 
 

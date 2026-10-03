@@ -60,3 +60,13 @@ def test_step_scorer_flow():
 def test_step_scorer_rejects_empty():
     with pytest.raises(ValueError):
         StepScorer([[]])
+
+
+def test_practice_log_save_midi_handles_fast_notes(tmp_path):
+    from practice_log import save_midi
+    from midi_core import load_midi_notes
+    path = tmp_path / "fast.mid"
+    save_midi([(0.0, 60, 100), (0.1, 62, 100), (0.2, 64, 100)], path)   # faster than the 0.25 s note length
+    ev = load_midi_notes(path)
+    assert [(e.note, round(e.time, 2), round(e.duration, 2)) for e in ev] == [
+        (60, 0.0, 0.25), (62, 0.1, 0.25), (64, 0.2, 0.25)]

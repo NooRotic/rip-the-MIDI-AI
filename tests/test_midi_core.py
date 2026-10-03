@@ -79,3 +79,9 @@ def test_group_steps_and_summary(tmp_path):
     summary = track_summary(tmp_path / "t.mid")
     assert summary[0]["notes"] == 0 and summary[1] == {
         "track": 1, "name": "melody", "notes": 4, "channels": [1, 2], "low": "C3", "high": "E4"}
+
+
+def test_steps_to_events():
+    from midi_core import steps_to_events
+    ev = steps_to_events([[60], [64, 67]], step_seconds=0.5)
+    assert [(e.time, e.note, round(e.duration, 2)) for e in ev] == [(0.0, 60, 0.45), (0.5, 64, 0.45), (0.5, 67, 0.45)]

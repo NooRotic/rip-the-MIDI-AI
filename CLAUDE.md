@@ -16,10 +16,18 @@ Node 22 is on the machine for a future web front-end; nothing uses it yet.
 uv pip install --python venv\Scripts\python.exe -r requirements-dev.txt   # setup
 venv\Scripts\python.exe -m pytest -q                                      # tests (no hardware needed)
 venv\Scripts\python.exe keyboard\midi_ports.py [--watch]                  # is the keyboard plugged in?
-venv\Scripts\python.exe keyboard\light_keys.py --probe | FILE.mid [--dry-run]
+venv\Scripts\python.exe keyboard\light_keys.py --probe | --notes "C4 E4" | FILE.mid [--dry-run]
 venv\Scripts\python.exe keyboard\snippet_trainer.py --notes "C4 E4+G4" | FILE.mid [--list]
 venv\Scripts\python.exe keyboard\practice_log.py [--report]
+
+cd web && npm install && npm run dev      # dashboard at http://127.0.0.1:5173 (Chrome/Edge for Web MIDI)
+cd web && npm test && npm run build       # vitest + tsc type-check + vite build
 ```
+
+The dashboard (`web/`) is SolidJS + Vite + TypeScript. Live keyboard data comes from the Web MIDI API in the
+browser; logs come through the Vite middleware in `web/api/plugin.ts` (`/api/*`), which also writes sessions
+the dashboard saves. `web/src/lib/analyse.ts` and `web/src/lib/session.ts` are line-for-line ports of
+`practice_log.py`; change both sides together. `.claude/launch.json` starts it as `dashboard`.
 
 Always run Python through `venv\Scripts\python.exe`, never the system interpreter. The keyboard is often
 unplugged: `--dry-run`, `--list`, `--report` and the tests all work without it, and `--port "Microsoft GS"`
@@ -42,8 +50,13 @@ sends to the Windows software synth for a listening test.
 
 - **Sessions are defined by silence, not buttons** (`practice_log.py`): a fixed-window listener cannot tell
   "pipe broken" from "nobody played". Keep that model in any new capture tool.
-- **Pure logic is separable and tested.** `StepScorer`, `build_schedule`, `load_midi_notes` take no ports.
-  New behaviour goes in a testable function first, then gets a thin CLI.
+- **Pure logic is separable and tested.** `StepScorer`, `build_schedule`, `load_midi_notes` take no ports;
+  in the web app `analyse`, `SessionTracker`, `writeSmf`, `groupCaptured` take no DOM or MIDI. New behaviour
+  goes in a testable function first, then gets a thin CLI or component.
+- **One MIDI owner at a time.** Windows hands a MIDI port to one process. The browser dashboard and the
+  Python trainer/logger cannot both hold the Casio input; tell the user which one to stop.
+- **Settings have two layers.** Anything a beginner must touch is Basic; thresholds, raw data and
+  diagnostics are Advanced (`settings.advanced` gates them). Don't add a third layer.
 - **Personal data never lands in git.** `keyboard/sessions/`, `*_log.json` and everything in `songs/` except
   `songs/public/` are gitignored. No family names in code, docs or commit messages; the player label defaults
   to `me` / `$RTM_PLAYER`.
