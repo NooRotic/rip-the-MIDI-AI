@@ -11,7 +11,8 @@ Expect `CASIO USB-MIDI 1` (input) and `CASIO USB-MIDI 2` (output). If only the L
 the keyboard is off or the cable is out.
 
 Then add `--watch` and press a few keys: every note should report `vel=100` (the LK-175 is not
-touch-sensitive) on channel 1.
+touch-sensitive) on channel 1. **This is the one check still owed as of 2026-10-03.** The keyboard sends
+nothing on its own (no active sensing), so only a key press can prove this leg.
 
 ## 2. Find the navigate channels
 ```

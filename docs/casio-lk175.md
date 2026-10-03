@@ -75,9 +75,12 @@ adapter out. Triage order:
    PC can still light keys and record playing, and a software synth (`--port "Microsoft GS"` in the tools, or
    any DAW) can produce the sound from the keyboard's MIDI output instead.
 
-Keyboard-to-PC note traffic was not re-confirmed on 2026-10-03: two listening windows saw no notes, but no
-one was pressing keys during them, and a MIDI Identity Request got no reply, which is common and not
-conclusive. First thing next session: `midi_ports.py --watch` and press a key.
+Keyboard-to-PC note traffic was not re-confirmed on 2026-10-03. Four listening windows (45 s, 120 s, 60 s,
+and a 30 s raw count of every message type) saw **nothing at all**, but nobody was confirmed to be pressing
+keys during them. Two useful negatives came out of it: the LK-175 sends **no Active Sensing** and does **not
+echo** incoming notes back out (no soft-thru), so there is no key-press-free way to prove the input leg. A MIDI
+Identity Request also got no reply. First thing next session: `midi_ports.py --watch`, press one key, and
+you have the answer in a second.
 
 ## Library notes
 
