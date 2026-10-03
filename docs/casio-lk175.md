@@ -22,7 +22,12 @@ Every key reports velocity 100. The LK-175's keys are not touch-sensitive, so no
 data exists. This rules out dynamics feedback and nothing else: note choice, timing, evenness, range and the
 left/right split are real and are where a beginner's practice value is.
 
-## Lighted keys from the PC (documented, not yet verified on this unit)
+## Lighted keys from the PC (verified 2026-10-03)
+
+**Verified on this unit:** with factory settings and no menu change, notes sent from the PC on channel 4
+(C4) and channel 3 (E3) made the keys light. That is the whole mechanism `light_keys.py` and
+`snippet_trainer.py` rely on, and it works. Still open: whether channels other than 3 and 4 also light
+(run `light_keys.py --probe` and watch), and whether a very low velocity still lights.
 
 The LK series lights a key when it **receives a note message on one of its navigate channels**. Casio's
 wording for the current LK-S245 (user's guide, settings list, page EN-38 of the English PDF):
@@ -47,14 +52,32 @@ in case this unit differs.
 
 **Open questions for the LK-175 specifically** (a 2014 model; its own guide could not be fetched online, and
 the retailer summaries only cover Keylight On/Off):
-1. Does it light MIDI IN notes on 3/4 with no menu change, or is there a FUNCTION item (older LK models call
-   it "Navi. Ch") that must be set?
-2. Does a very low velocity (we use 20 for the trainer, so the hint note is quiet) still light the key?
-3. Does the LK-175 flash the *next* key the way the LK-S245 lesson mode does, or only light the current one?
+1. ~~Does it light MIDI IN notes on 3/4 with no menu change?~~ **Yes** (2026-10-03).
+2. Do channels other than 3 and 4 light too? (`light_keys.py --probe`, watch all 16.)
+3. Does a very low velocity (the trainer uses 20 so the hint note is quiet) still light the key?
+4. Does the LK-175 flash the *next* key the way the LK-S245 lesson mode does, or only light the current one?
 
-Procedure to close them: `venv\Scripts\python.exe keyboard\light_keys.py --probe`, watch which channels light
-middle C, then `--note C4 --channel 4 --velocity 20` style tests. Record the answers in
-`lessons/00-first-contact/README.md` and update this section.
+Record the answers in `lessons/00-first-contact/README.md` and update this section.
+
+## Speakers silent (2026-10-03)
+
+After the keyboard was run from the wrong power adapter, the built-in speakers produce no sound, while USB
+MIDI, key lighting and the main board all work. The correct adapter for the LK-175 is Casio's
+**AD-E95100L (9.5 V DC)**; the keyboard also runs on 6 AA batteries, which is the cleanest way to rule the
+adapter out. Triage order:
+
+1. **Batteries in, adapter out, volume up.** If sound returns, the adapter (or what it did to the power
+   stage) is the problem, not the amp.
+2. **Headphones in the PHONES/OUTPUT jack.** Sound in the phones but not the speakers means the speaker amp or
+   the speakers themselves are gone; the sound engine is fine, and practice can continue on headphones or an
+   external speaker on that jack.
+3. **No sound anywhere** means the audio stage after the sound generator is damaged. MIDI is unaffected: the
+   PC can still light keys and record playing, and a software synth (`--port "Microsoft GS"` in the tools, or
+   any DAW) can produce the sound from the keyboard's MIDI output instead.
+
+Keyboard-to-PC note traffic was not re-confirmed on 2026-10-03: two listening windows saw no notes, but no
+one was pressing keys during them, and a MIDI Identity Request got no reply, which is common and not
+conclusive. First thing next session: `midi_ports.py --watch` and press a key.
 
 ## Library notes
 

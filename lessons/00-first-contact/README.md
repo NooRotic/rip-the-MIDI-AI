@@ -21,7 +21,9 @@ Middle C plays for one second on each channel 1 to 16. Write down which channels
 (not just sound). Casio's default is 3 (left hand) and 4 (right hand). If nothing lights, check the
 FUNCTION menu for a Keylight = ON setting and see `docs/casio-lk175.md`.
 
-Result: channels that lit: ___ (date: ___)
+Result: **2026-10-03: C4 on channel 4 and E3 on channel 3, sent from the PC with factory settings, lit the
+keys.** The full 1..16 probe has not been run yet, so whether other channels also light is unknown.
+Speakers were silent (see `docs/casio-lk175.md`, "Speakers silent"); headphone test pending.
 
 ## 3. Five-finger warm-up with the trainer
 ```
