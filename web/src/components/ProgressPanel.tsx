@@ -44,7 +44,11 @@ function BarChart(props: { bars: DayBar[] }) {
   const padB = 22
   const padT = 14
   const [tip, setTip] = createSignal<{ x: number; y: number; bar: DayBar } | null>(null)
-  const max = () => Math.max(5, ...props.bars.map((b) => b.minutes))
+  const NICE = [10, 20, 30, 60, 90, 120, 180, 240, 360, 480]
+  const max = () => {
+    const m = Math.max(...props.bars.map((b) => b.minutes), 1)
+    return NICE.find((n) => n >= m) ?? Math.ceil(m / 60) * 60
+  }
   const plotW = W - padL - 6
   const slot = () => plotW / props.bars.length
   const barW = () => Math.max(2, slot() - 2) // 2px surface gap between neighbours
