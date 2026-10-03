@@ -1,0 +1,19 @@
+# environment
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# personal practice data - never published
+keyboard/sessions/
+keyboard/practice_log.json
+keyboard/trainer_log.json
+
+# songs: transcriptions of copyrighted music stay local; only songs/public/ (public domain / own work) is tracked
+songs/*
+!songs/README.md
+!songs/public/
+
+# editor / local tool state
+.claude/settings.local.json
